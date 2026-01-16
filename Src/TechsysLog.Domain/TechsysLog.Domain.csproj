@@ -1,0 +1,18 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<!-- O domínio é uma biblioteca de classes -->
+		<TargetFramework>net8.0</TargetFramework>
+		<Nullable>enable</Nullable>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<RootNamespace>TechsysLog.Domain</RootNamespace>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<!-- Pacotes NuGet úteis para o domínio -->
+		<!-- FluentValidation pode ser usado para validar entidades e value objects -->
+		<PackageReference Include="FluentValidation" Version="11.9.0" />
+		<PackageReference Include="MongoDB.Bson" Version="3.1.0" />
+	</ItemGroup>
+
+</Project>

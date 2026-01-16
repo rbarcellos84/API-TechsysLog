@@ -1,0 +1,6 @@
+@TechsysLog.Web.Api_HostAddress = http://localhost:5204
+
+GET {{TechsysLog.Web.Api_HostAddress}}/swagger/index.html
+Accept: application/json
+
+###
