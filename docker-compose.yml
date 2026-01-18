@@ -1,0 +1,32 @@
+services:
+  db-log:
+    image: mongo:latest
+    container_name: mongodb-techsys
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+
+  api-techsys:
+    image: techsyslog-api
+    container_name: api-techsys-container
+    ports:
+      - "7223:8080"
+    environment:
+      - Mongo__ConnectionString=mongodb://db-log:27017
+      - ConnectionStrings__MongoDb=mongodb://db-log:27017
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:8080
+    depends_on:
+      - db-log
+
+  web-techsys:
+    image: techsys-web
+    container_name: angular-dashboard
+    ports:
+      - "4200:80"
+    depends_on:
+      - api-techsys
+
+volumes:
+  mongo-data:

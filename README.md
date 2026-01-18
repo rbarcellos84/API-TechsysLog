@@ -1,8 +1,6 @@
 TechsysLog - Sistema de Gestão Logística
 
-
-
-Este projeto é uma API robusta desenvolvida em .NET 8 focada na rastreabilidade e gestão de pedidos e notificações logísticas, utilizando MongoDB como base de dados principal.
+Este projeto é uma solução full-stack composta por um Dashboard em Angular e uma API robusta em .NET 8, focada na rastreabilidade e gestão de pedidos e notificações logísticas, utilizando MongoDB como base de dados principal.
 
 
 
@@ -12,75 +10,149 @@ O projeto utiliza os princípios da Clean Architecture, garantindo o desacoplame
 
 
 
-Conceitos Implementados:
-
-&nbsp;   CQRS (Command Query Responsibility Segregation): Separação clara entre operações de escrita (Commands) e leitura (Queries).
-
-&nbsp;   Clean Code \& SOLID: Código escrito priorizando a legibilidade, responsabilidade única e baixo acoplamento.
-
-&nbsp;   Global Exception Handling: Uso do ApiExceptionFilter para garantir respostas JSON padronizadas em caso de erro.
-
-&nbsp;   Dependency Injection: Configuração centralizada para facilitar a evolução e testabilidade do sistema.
+CQRS (Command Query Responsibility Segregation): Separação clara entre operações de escrita e leitura.
 
 
 
-Configuração do MongoDB
+Clean Code \& SOLID: Código escrito priorizando a legibilidade e baixo acoplamento.
 
-A aplicação utiliza o MongoDB para persistência de dados. Antes de executar o projeto, é necessário configurar a string de conexão.
 
-Localização: TechsysLog.Web.Api/appsettings.json
 
-Ajuste as credenciais, IP e porta no campo ConnectionString e o nome da base de dados em DatabaseName:
+Global Exception Handling: Respostas JSON padronizadas via ApiExceptionFilter.
+
+
+
+Dependency Injection: Configuração centralizada para facilitar a evolução e testabilidade.
+
+
+
+Como Executar com Docker (Recomendado)
+
+Esta é a forma mais rápida de subir todo o ecossistema (Frontend, API e Banco de Dados).
+
+
+
+Pré-requisitos
+
+Docker Desktop instalado.
+
+
+
+Node.js \& Angular CLI (apenas para o primeiro build do frontend).
+
+
+
+Passo a Passo
+
+Build do Frontend (Angular): Navegue até a pasta WebTechsys e gere os arquivos de produção para que o Nginx possa servi-los:
+
+
+
+Bash
+
+
+
+npm install
+
+ng build
+
+Construir as Imagens: No diretório raiz (onde está o docker-compose.yml), execute:
+
+
+
+Bash
+
+
+
+\# Cria a imagem do dashboard
+
+docker build -t techsys-web ./WebTechsys
+
+
+
+\# Cria a imagem da API
+
+docker build -t techsyslog-api ./API-TechsysLog
+
+Subir os Containers: Execute o comando para orquestrar os serviços:
+
+
+
+Bash
+
+
+
+docker-compose up -d
+
+Endereços de Acesso
+
+Dashboard (Frontend): http://localhost:4200
+
+
+
+Swagger (API Documentation): http://localhost:7223/swagger/index.html
+
+
+
+MongoDB: mongodb://localhost:27017
+
+
+
+Configuração Local (Sem Docker)
+
+Se optar por rodar os serviços manualmente:
+
+
+
+MongoDB: Certifique-se de que o serviço está rodando em localhost:27017.
+
+
+
+API Connection String: Ajuste o arquivo appsettings.json na pasta da API:
 
 
 
 JSON
 
+
+
 "MongoDbSettings": {
 
-&nbsp; "ConnectionString": "mongodb://localhost:27017/",
+  "ConnectionString": "mongodb://localhost:27017/",
 
-&nbsp; "DatabaseName": "TechsysLogDB"
+  "DatabaseName": "TechsysLogDB"
 
 }
 
-
-
-Qualidade e Testes Automatizados
-
-A estrutura do projeto foi concebida para suportar uma pirâmide de testes completa em todas as camadas (Domínio, Aplicação e Infraestrutura).
+Execução:
 
 
 
-&nbsp;   Nota de Status: Devido ao cronograma e priorização da entrega da arquitetura base, os testes automatizados não foram implementados nesta fase. No entanto, o código foi escrito seguindo padrões de testabilidade (Injeção de Dependência e Interfaces), permitindo a inclusão de testes unitários e de integração de forma imediata e sem necessidade de refatoração.
+Bash
 
 
 
-Infraestrutura de Notificações
+dotnet restore
 
-&nbsp;   Decisão Técnica: O EmailService opera atualmente em Modo de Simulação (Console). Esta escolha prioriza a agilidade no desenvolvimento. Graças ao uso de interfaces, a migração para um provedor real (SendGrid, SMTP ou AWS SES) é feita apenas alterando a classe de infraestrutura na camada de IoC.
+dotnet run --project TechsysLog.Web.Api
 
+Tecnologias e Decisões Técnicas
 
-
-Tecnologias e Clean Code
-
-&nbsp;   C# 12 / .NET 8
-
-&nbsp;   MongoDB Driver (NoSQL)
-
-&nbsp;   Mapeamento Manual \& DTOs: Para evitar a exposição de documentos internos da base de dados.
-
-&nbsp;   Summaries XML: Documentação técnica embutida diretamente no código para facilitar a manutenção.
+C# 12 / .NET 8 e MongoDB Driver.
 
 
 
-Como Executar
+EmailService (Simulação): Opera atualmente via Console para agilidade no desenvolvimento, permitindo troca futura via interface para AWS SES ou SendGrid.
 
-&nbsp;   Certifique-se de que o MongoDB Compass ou o serviço do Mongo está rodando em localhost:27017.
 
-&nbsp;   Verifique o appsettings.json conforme as instruções acima.
 
-&nbsp;   No terminal, execute: dotnet restore.
+Mapeamento Manual: Uso de DTOs para evitar a exposição de documentos internos da base de dados.
 
-&nbsp;   Inicie a API: dotnet run --project TechsysLog.Web.Api.
+
+
+Status de Testes: A estrutura suporta testes unitários e de integração em todas as camadas, embora não implementados nesta fase inicial de entrega arquitetural.
+
+
+
+
 
