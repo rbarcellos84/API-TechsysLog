@@ -3,6 +3,7 @@ using TechsysLog.Domain.Interfaces;
 using TechsysLog.Application.Dtos.Usuarios;
 using TechsysLog.Application.Commands.Usuarios;
 using TechsysLog.Application.Handlers;
+using TechsysLog.Domain.Utils;
 
 namespace TechsysLog.Application.Handlers.Usuarios
 {
@@ -32,11 +33,13 @@ namespace TechsysLog.Application.Handlers.Usuarios
         {
             try
             {
+                var pass = SenhaHelper.HashPassword(command.Senha);
+
                 var usuario = new Usuario(
                     id: Guid.NewGuid(),
                     nome: command.Nome,
                     email: command.Email,
-                    senhaHash: HashPassword(command.Senha)
+                    senhaHash: pass 
                 );
 
                 await _usuarioRepository.AddAsync(usuario, ct);
@@ -55,16 +58,6 @@ namespace TechsysLog.Application.Handlers.Usuarios
             {
                 throw;
             }
-        }
-
-        /// <summary>
-        /// Aplica codificação Base64 à senha para persistência inicial.
-        /// </summary>
-        /// <param name="senha">Senha em formato de texto simples.</param>
-        /// <returns>Cadeia de caracteres da senha codificada.</returns>
-        private static string HashPassword(string senha)
-        {
-            return Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(senha));
         }
     }
 }

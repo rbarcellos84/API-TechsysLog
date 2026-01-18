@@ -1,14 +1,14 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using TechsysLog.Application.Commands.Pedidos;
 using TechsysLog.Application.Handlers.Pedidos;
 using TechsysLog.Application.Queries.Enums;
 using TechsysLog.Application.Queries.Pedidos;
-using TechsysLog.Application.Queries.Usuarios;
 using TechsysLog.Application.QueryHandlers.Enums;
 using TechsysLog.Application.QueryHandlers.Pedidos;
-using TechsysLog.Application.QueryHandlers.Usuarios;
 using TechsysLog.Domain.Exceptions;
+using TechsysLog.WebApi.Hubs;
 
 namespace TechsysLog.WebApi.Controllers
 {
@@ -22,10 +22,10 @@ namespace TechsysLog.WebApi.Controllers
         private readonly CancelarPedidoHandler _cancelarPedidoHandler;
         private readonly ObterListaStatusHandler _statusHandler;
         private readonly ObterListaPedidosHandler _todosHandler;
-        private readonly ObterListaPedidosEntreguesHandler _entreguesHandler;
-        private readonly ObterListaPedidosNaoEntreguesHandler _naoEntreguesHandler;
-        private readonly ObterPedidoPorPedidoHandler _porIdHandler;
-        private readonly ObterLoginPorEmailHandler _loginPorEmail;
+        private readonly ObterPedidoPorNumeroHandler _porIdHandler;
+        private readonly ObterPedidoPorIdHandler _porIdPedidoHandler;
+        private readonly MarcarPedidoHandler _marcarPedidoHandler;
+        private readonly IHubContext<PedidoHub> _hubContext;
 
         public PedidosController(
             CriarPedidoHandler criarPedidoHandler,
@@ -33,48 +33,20 @@ namespace TechsysLog.WebApi.Controllers
             CancelarPedidoHandler cancelarPedidoHandler,
             ObterListaStatusHandler statusHandler,
             ObterListaPedidosHandler todosHandler,
-            ObterListaPedidosEntreguesHandler entreguesHandler,
-            ObterListaPedidosNaoEntreguesHandler naoEntreguesHandler,
-            ObterPedidoPorPedidoHandler porIdHandler,
-            ObterLoginPorEmailHandler loginPorEmail)
+            ObterPedidoPorNumeroHandler porIdHandler,
+            ObterPedidoPorIdHandler obterPedidoPorIdHandler,
+            MarcarPedidoHandler marcarPedidoHandler,
+            IHubContext<PedidoHub> hubContext)
         {
             _criarPedidoHandler = criarPedidoHandler;
             _atualizarStatusPedidoHandler = atualizarStatusPedidoHandler;
             _cancelarPedidoHandler = cancelarPedidoHandler;
             _statusHandler = statusHandler;
             _todosHandler = todosHandler;
-            _entreguesHandler = entreguesHandler;
-            _naoEntreguesHandler = naoEntreguesHandler;
             _porIdHandler = porIdHandler;
-            _loginPorEmail = loginPorEmail;
-        }
-
-        [HttpGet("nao-entregues")]
-        public async Task<IActionResult> ObterPedidosNaoEntregues(CancellationToken ct)
-        {
-            try
-            {
-                var pedidos = await _naoEntreguesHandler.HandleAsync(new ObterListaPedidosNaoEntreguesQuery(), ct);
-                return Ok(pedidos);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new { erro = "Erro ao listar pedidos não entregues.", detalhes = ex.Message });
-            }
-        }
-
-        [HttpGet("entregues")]
-        public async Task<IActionResult> ObterPedidosEntregues(CancellationToken ct)
-        {
-            try
-            {
-                var pedidos = await _entreguesHandler.HandleAsync(new ObterListaPedidosEntreguesQuery(), ct);
-                return Ok(pedidos);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new { erro = "Erro ao listar pedidos entregues.", detalhes = ex.Message });
-            }
+            _porIdPedidoHandler = obterPedidoPorIdHandler;
+            _marcarPedidoHandler = marcarPedidoHandler;
+            _hubContext = hubContext;
         }
 
         [HttpGet("obter-todos")]
@@ -106,20 +78,18 @@ namespace TechsysLog.WebApi.Controllers
             }
         }
 
-        [HttpGet("id-por-email/{email}")]
-        public async Task<IActionResult> GetIdPorEmail(string email, CancellationToken ct)
+        [HttpPut("marcar-como-lido/{numeroPedido}")]
+        public async Task<IActionResult> MarcarComoLito(string numeroPedido, CancellationToken ct)
         {
             try
             {
-                var query = new ObterLoginPorEmailQuery(email);
-                var usuario = await _loginPorEmail.HandleAsync(query, ct);
-                if (usuario == null) return NotFound(new { mensagem = "Usuário não encontrado." });
+                await _marcarPedidoHandler.HandleAsync(new MarcarPedidoCommand(numeroPedido), ct);
 
-                return Ok(new { usuarioId = usuario.Id });
+                return Ok(new { mensagem = "Pedido marcado como lido com sucesso." });
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { erro = "Erro ao processar busca de e-mail.", detalhes = ex.Message });
+                return StatusCode(500, new { erro = "Erro ao marcar pedido como lido.", detalhes = ex.Message });
             }
         }
 
@@ -129,6 +99,8 @@ namespace TechsysLog.WebApi.Controllers
             try
             {
                 await _criarPedidoHandler.HandleAsync(command, ct);
+                await _hubContext.Clients.All.SendAsync("AtualizarGraficos");
+
                 return Ok(new { mensagem = "Pedido registrado com sucesso." });
             }
             catch (DomainException ex)
@@ -147,6 +119,8 @@ namespace TechsysLog.WebApi.Controllers
             try
             {
                 await _atualizarStatusPedidoHandler.HandleAsync(command, ct);
+                await _hubContext.Clients.All.SendAsync("AtualizarGraficos");
+
                 return Ok(new { mensagem = "Status do pedido atualizado com sucesso!" });
             }
             catch (DomainException ex)
@@ -167,7 +141,12 @@ namespace TechsysLog.WebApi.Controllers
                 if (id != command.Id)
                     return BadRequest(new { erro = "Id do pedido não corresponde ao informado." });
 
+                var pedido = await _porIdPedidoHandler.HandleAsync(new ObterPedidoPorIdQuery(command.Id), ct);
+                if (pedido == null) return NotFound(new { mensagem = "Pedido não encontrado." });
+
                 await _cancelarPedidoHandler.HandleAsync(command, ct);
+                await _hubContext.Clients.All.SendAsync("AtualizarGraficos");
+
                 return Ok(new { mensagem = "Pedido cancelado com sucesso." });
             }
             catch (DomainException ex)

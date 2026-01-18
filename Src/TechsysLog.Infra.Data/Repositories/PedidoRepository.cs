@@ -50,28 +50,21 @@ namespace TechsysLog.Infra.Data.Repositories
             => await _pedidos.Find(p => p.NumeroPedido == numero).FirstOrDefaultAsync(ct);
 
         /// <summary>
+        /// Obtém uma lista de pedidos filtrada pelo estado (status).
+        /// </summary>
+        /// <param name="status">O status do pedido (Enum ou int).</param>
+        /// <param name="ct">Token de cancelamento.</param>
+        /// <returns>Uma lista de pedidos encontrados.</returns>
+        public async Task<IEnumerable<Pedido>> ListarTodosPorEstadoAsync(Status status, CancellationToken ct)
+            => await _pedidos.Find(p => p.Status == status).ToListAsync(ct);
+
+        /// <summary>
         /// Lista todos os pedidos cadastrados.
         /// </summary>
         /// <param name="ct">Token de cancelamento da operação.</param>
         /// <returns>Lista de pedidos.</returns>
         public async Task<IEnumerable<Pedido>> ListarTodosAsync(CancellationToken ct)
             => await _pedidos.Find(Builders<Pedido>.Filter.Empty).ToListAsync(ct);
-
-        /// <summary>
-        /// Lista todos os pedidos não entregue.
-        /// </summary>
-        /// <param name="ct">Token de cancelamento da operação.</param>
-        /// <returns>Lista de pedidos.</returns>
-        public async Task<IEnumerable<Pedido>> ListarTodosNaoEntregueAsync(CancellationToken ct)
-            => await _pedidos.Find(Builders<Pedido>.Filter.Ne(p => p.Status, Status.Entregue)).ToListAsync(ct);
-
-        /// <summary>
-        /// Lista todos os pedidos entregue.
-        /// </summary>
-        /// <param name="ct">Token de cancelamento da operação.</param>
-        /// <returns>Lista de pedidos.</returns>
-        public async Task<IEnumerable<Pedido>> ListarTodosEntregueAsync(CancellationToken ct)
-            => await _pedidos.Find(Builders<Pedido>.Filter.Eq(p => p.Status, Status.Entregue)).ToListAsync(ct);
 
         /// <summary>
         /// Atualiza os dados de um pedido existente.

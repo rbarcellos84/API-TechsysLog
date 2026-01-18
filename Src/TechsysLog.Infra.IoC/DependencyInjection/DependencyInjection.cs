@@ -1,15 +1,11 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
-using TechsysLog.Application.Dtos.Notificacoes;
 using TechsysLog.Application.Handlers;
-using TechsysLog.Application.Handlers.Entregas;
-using TechsysLog.Application.Handlers.Notificacoes;
 using TechsysLog.Application.Handlers.Pedidos;
 using TechsysLog.Application.Handlers.Usuarios;
 using TechsysLog.Application.Queries;
-using TechsysLog.Application.Queries.Notificacoes;
+using TechsysLog.Application.Queries.Pedidos;
 using TechsysLog.Application.QueryHandlers;
 using TechsysLog.Application.QueryHandlers.Enums;
-using TechsysLog.Application.QueryHandlers.Notificacoes;
 using TechsysLog.Application.QueryHandlers.Pedidos;
 using TechsysLog.Application.QueryHandlers.Usuarios;
 using TechsysLog.Domain.Interfaces;
@@ -37,8 +33,6 @@ namespace TechsysLog.IoC
             /// </summary>
             services.AddScoped<IUsuarioRepository, UsuarioRepository>();
             services.AddScoped<IPedidoRepository, PedidoRepository>();
-            services.AddScoped<IEntregaRepository, EntregaRepository>();
-            services.AddScoped<INotificacaoRepository, NotificacaoRepository>();
             services.AddScoped<IEmailService, EmailService>();
 
             // --- HANDLERS - ESCRITA (COMMANDS) ---
@@ -54,27 +48,18 @@ namespace TechsysLog.IoC
             services.AddScoped<AtualizarPedidoHandler>();
             services.AddScoped<AtualizarStatusPedidoHandler>();
             services.AddScoped<CancelarPedidoHandler>();
-
-            services.AddScoped<RegistrarEntregaHandler>();
-            services.AddScoped<AtualizarEntregaHandler>();
-
-            services.AddScoped<EnviarNotificacaoHandler>();
-            services.AddScoped<MarcarNotificacaoComoLidaHandler>();
+            services.AddScoped<MarcarPedidoHandler>();
 
             // --- QUERY HANDLERS - LEITURA (QUERIES) ---
             /// <summary>
             /// Registro dos Handlers responsáveis por consultas e retorno de dados (CQRS - Read Side).
             /// </summary>
             services.AddScoped<ObterListaStatusHandler>();
-            services.AddScoped<ObterListaNotificacoesHandler>();
-            services.AddScoped<ObterNotificacoesNaoLidasHandler>();
-            services.AddScoped<ObterNotificacoesPorUsuarioHandler>();
-            services.AddScoped<ObterNotificacoesPorUsuarioNaoLidasHandler>();
 
-            services.AddScoped<ObterListaPedidosEntreguesHandler>();
             services.AddScoped<ObterListaPedidosHandler>();
-            services.AddScoped<ObterListaPedidosNaoEntreguesHandler>();
-            services.AddScoped<ObterPedidoPorPedidoHandler>();
+            services.AddScoped<ObterListaPedidosPorEstadoHandler>();
+            services.AddScoped<ObterPedidoPorNumeroHandler>();
+            services.AddScoped<ObterPedidoPorIdHandler>();
 
             services.AddScoped<ObterLoginPorEmailHandler>();
             services.AddScoped<ObterLoginPorIdHandler>();

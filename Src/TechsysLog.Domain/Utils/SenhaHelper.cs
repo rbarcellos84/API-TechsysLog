@@ -23,6 +23,17 @@ namespace TechsysLog.Domain.Utils
         }
 
         /// <summary>
+        /// Aplica codificação Base64 à senha para persistência inicial.
+        /// </summary>
+        /// <param name="senha">Senha em formato de texto simples.</param>
+        /// <returns>Cadeia de caracteres da senha codificada.</returns>
+        public static string HashPassword(string senha)
+        {
+            if (string.IsNullOrEmpty(senha)) return string.Empty;
+            return Convert.ToBase64String(Encoding.UTF8.GetBytes(senha));
+        }
+
+        /// <summary>
         /// Valida se a senha informada corresponde ao hash armazenado.
         /// </summary>
         /// <param name="senhaInformada">Senha em texto puro informada pelo usuário.</param>
@@ -30,7 +41,7 @@ namespace TechsysLog.Domain.Utils
         /// <returns><c>true</c> se a senha informada corresponde ao hash armazenado; caso contrário, <c>false</c>.</returns>
         public static bool ValidarSenha(string senhaInformada, string senhaHashArmazenada)
         {
-            var hashInformada = GerarHash(senhaInformada);
+            var hashInformada = HashPassword(senhaInformada);
             return hashInformada == senhaHashArmazenada;
         }
     }

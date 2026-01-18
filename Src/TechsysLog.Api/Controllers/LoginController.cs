@@ -1,9 +1,12 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using DnsClient;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
 using TechsysLog.Application.Commands.Usuarios;
 using TechsysLog.Application.Handlers.Usuarios;
-using TechsysLog.Web.Api.Security;
 using TechsysLog.Domain.Exceptions;
+using TechsysLog.Domain.Utils;
+using TechsysLog.Web.Api.Security;
 
 namespace TechsysLog.WebApi.Controllers
 {
@@ -15,15 +18,18 @@ namespace TechsysLog.WebApi.Controllers
         private readonly EfetuarLoginHandler _loginHandler;
         private readonly RecuperarSenhaHandler _recuperarSenhaHandler;
         private readonly CriarUsuarioHandler _criarUsuarioHandler;
+        private readonly IConfiguration _configuration;
 
         public LoginController(
             EfetuarLoginHandler loginHandler,
             RecuperarSenhaHandler recuperarSenhaHandler,
-            CriarUsuarioHandler criarUsuarioHandler)
+            CriarUsuarioHandler criarUsuarioHandler,
+            IConfiguration configuration)
         {
             _loginHandler = loginHandler;
             _recuperarSenhaHandler = recuperarSenhaHandler;
             _criarUsuarioHandler = criarUsuarioHandler;
+            _configuration = configuration;
         }
 
         [HttpPost("login")]
@@ -36,12 +42,11 @@ namespace TechsysLog.WebApi.Controllers
                 if (usuario == null)
                     return Unauthorized(new { erro = "Credenciais inválidas." });
 
-                // Validação de segurança básica
-                if (!command.Senha.Equals(usuario.SenhaHash) || !command.Email.Equals(usuario.Email))
+                if (!command.Email.Equals(usuario.Email) || !SenhaHelper.ValidarSenha(command.Senha,usuario.SenhaHash))
                     return BadRequest(new { erro = "E-mail ou senha incorretos." });
 
                 // Geração do Token que resolve o erro 401 dos outros endpoints
-                var token = JwtSecurity.GenerateToken(usuario.Email);
+                var token = JwtSecurity.GenerateToken(usuario.Email, _configuration);
 
                 return Ok(new
                 {

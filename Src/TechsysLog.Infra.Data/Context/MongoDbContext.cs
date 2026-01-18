@@ -34,15 +34,5 @@ namespace TechsysLog.Infra.Data.Context
         /// Coleção de pedidos.
         /// </summary>
         public IMongoCollection<Pedido> Pedidos => _database.GetCollection<Pedido>("Pedidos");
-
-        /// <summary>
-        /// Coleção de entregas.
-        /// </summary>
-        public IMongoCollection<Entrega> Entregas => _database.GetCollection<Entrega>("Entregas");
-
-        /// <summary>
-        /// Coleção de notificações.
-        /// </summary>
-        public IMongoCollection<Notificacao> Notificacoes => _database.GetCollection<Notificacao>("Notificacoes");
     }
 }

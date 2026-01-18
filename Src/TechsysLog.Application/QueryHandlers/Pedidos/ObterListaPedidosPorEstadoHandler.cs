@@ -1,6 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
+using System.Text;
 using System.Threading.Tasks;
 using TechsysLog.Application.Dtos.Pedidos;
 using TechsysLog.Application.DTOs;
@@ -10,33 +11,30 @@ using TechsysLog.Domain.Interfaces;
 
 namespace TechsysLog.Application.QueryHandlers.Pedidos
 {
-    /// <summary>
-    /// Handler responsável por processar a query de listagem global de todos os pedidos registrados.
-    /// </summary>
-    public class ObterListaPedidosHandler : IQueryHandler<ObterListaPedidosQuery, IEnumerable<PedidoDto>>
+    public class ObterListaPedidosPorEstadoHandler : IQueryHandler<ObterListaPedidosPorEstadoQuery, IEnumerable<PedidoDto>>
     {
         private readonly IPedidoRepository _pedidoRepository;
 
         /// <summary>
-        /// Inicializa uma nova instância da classe <see cref="ObterListaPedidosHandler"/>.
+        /// Inicializa uma nova instância da classe <see cref="ObterListaPedidosPorEstadoHandler"/>.
         /// </summary>
         /// <param name="pedidoRepository">Instância do repositório de pedidos injetada via DI.</param>
-        public ObterListaPedidosHandler(IPedidoRepository pedidoRepository)
+        public ObterListaPedidosPorEstadoHandler(IPedidoRepository pedidoRepository)
         {
             _pedidoRepository = pedidoRepository;
         }
 
         /// <summary>
-        /// Executa a consulta para listar todos os pedidos cadastrados com tratamento de exceções.
+        /// Executa a consulta para listar os pedidos por estado com tratamento de exceções.
         /// </summary>
         /// <param name="query">Objeto de consulta para listagem de pedidos.</param>
         /// <param name="ct">Token de cancelamento para operações assíncronas.</param>
-        /// <returns>Uma coleção de <see cref="PedidoDto"/> contendo todos os pedidos localizados.</returns>
-        public async Task<IEnumerable<PedidoDto>> HandleAsync(ObterListaPedidosQuery query, CancellationToken ct)
+        /// <returns>Uma coleção de <see cref="PedidoDto"/> contendo todos os pedidos filtrados por estados.</returns>
+        public async Task<IEnumerable<PedidoDto>> HandleAsync(ObterListaPedidosPorEstadoQuery query, CancellationToken ct)
         {
             try
             {
-                var pedidos = await _pedidoRepository.ListarTodosAsync(ct);
+                var pedidos = await _pedidoRepository.ListarTodosPorEstadoAsync(query.Status, ct);
 
                 return pedidos.Select(p => new PedidoDto
                 {
@@ -46,10 +44,10 @@ namespace TechsysLog.Application.QueryHandlers.Pedidos
                     UsuarioId = p.UsuarioId,
                     ValorTotal = p.ValorTotal,
                     DataCriacao = p.DataCriacao,
-                    DataAtualizacao = p.DataAtualizacao,
-                    Descricao = p.Descricao,
                     DataEnvio = p.DataEnvio,
                     Lida = p.Lida,
+                    DataAtualizacao = p.DataAtualizacao,
+                    Descricao = p.Descricao,
                     Itens = p.Itens.ToList(),
 
                     EnderecoEntrega = new EnderecoDto

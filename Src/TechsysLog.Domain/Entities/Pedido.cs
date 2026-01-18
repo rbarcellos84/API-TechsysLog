@@ -16,7 +16,10 @@ namespace TechsysLog.Domain.Entities
         public Endereco EnderecoEntrega { get; private set; }
         public Status Status { get; private set; }
         public DateTime DataCriacao { get; private set; }
+        public DateTime? DataEnvio { get; private set; }
+        public bool Lida { get; private set; }
         public DateTime? DataAtualizacao { get; private set; }
+
         public Pedido(
             Guid id,
             Guid usuarioId,
@@ -26,7 +29,8 @@ namespace TechsysLog.Domain.Entities
             decimal valorTotal,
             Endereco enderecoEntrega,
             Status status,
-            DateTime dataCriacao)
+            DateTime dataCriacao,
+            bool lida)
         {
             Id = id;
             UsuarioId = usuarioId;
@@ -37,6 +41,7 @@ namespace TechsysLog.Domain.Entities
             EnderecoEntrega = enderecoEntrega;
             Status = status;
             DataCriacao = dataCriacao;
+            Lida = lida;
         }
 
         public void AtualizarStatus(Status novoStatus)
@@ -47,8 +52,17 @@ namespace TechsysLog.Domain.Entities
             if (novoStatus < Status) 
                 throw new DomainException("Não é permitido retroceder o status do pedido.");
 
+            if (novoStatus == Status.Enviado)
+                DataEnvio = DateTime.UtcNow;
+
             Status = novoStatus; 
             DataAtualizacao = DateTime.UtcNow;
+            Lida = false;
+        }
+
+        public void MarcarComoLido()
+        {
+            Lida = true;
         }
     }
 }

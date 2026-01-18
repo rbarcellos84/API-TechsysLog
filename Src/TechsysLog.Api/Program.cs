@@ -10,6 +10,7 @@ using TechsysLog.WebApi.Hubs;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization;
 using MongoDB.Bson.Serialization.Serializers;
+using TechsysLog.Web.Api.Security;
 
 // ============================================================
 // CONFIGURAÇÃO GLOBAL DO MONGODB (ADICIONE ISSO AQUI)
@@ -21,6 +22,11 @@ var builder = WebApplication.CreateBuilder(args);
 // ============================================================
 // 1. CONFIGURAÇÃO DE AUTENTICAÇÃO JWT
 // ============================================================
+
+// Lendo a chave DIRETAMENTE do appsettings.json para bater com o gerador
+var secretKeyFromConfig = builder.Configuration["JwtSettings:Secret"];
+var keyBytes = Encoding.ASCII.GetBytes(secretKeyFromConfig);
+
 builder.Services.AddAuthentication(auth =>
 {
     auth.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -32,12 +38,12 @@ builder.Services.AddAuthentication(auth =>
     bearer.TokenValidationParameters = new TokenValidationParameters
     {
         ValidateIssuerSigningKey = true,
-        IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(JwtSecurity.SecretKey)),
+        IssuerSigningKey = new SymmetricSecurityKey(keyBytes), // Usa a chave do JSON
         ValidateIssuer = false,
         ValidateAudience = false
     };
 
-    // Permite que o SignalR receba o token via QueryString (essencial para WebSockets)
+    // Configuração para o SignalR (access_token via URL)
     bearer.Events = new JwtBearerEvents
     {
         OnMessageReceived = context =>
@@ -98,9 +104,10 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("DefaultPolicy", policy =>
     {
-        policy.AllowAnyOrigin()
+        policy.WithOrigins("http://localhost:4200")
               .AllowAnyMethod()
-              .AllowAnyHeader();
+              .AllowAnyHeader()
+              .AllowCredentials();
     });
 });
 
@@ -125,6 +132,5 @@ app.UseAuthorization();  // Verifica o que o usuário pode fazer
 // Mapeamento de Rotas e Hubs
 app.MapControllers();
 app.MapHub<PedidoHub>("/hubs/pedidos");
-app.MapHub<NotificationAccessHub>("/hubs/notificacoes");
 
 app.Run();

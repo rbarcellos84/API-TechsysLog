@@ -15,7 +15,6 @@ namespace TechsysLog.Application.Handlers.Pedidos
     public class AtualizarStatusPedidoHandler
     {
         private readonly IPedidoRepository _pedidoRepository;
-        private readonly INotificacaoRepository _notificacaoRepository;
 
         /// <summary>
         /// Inicializa uma nova instância da classe <see cref="AtualizarStatusPedidoHandler"/>.
@@ -23,11 +22,9 @@ namespace TechsysLog.Application.Handlers.Pedidos
         /// <param name="pedidoRepository">Instância do repositório de pedidos injetada via DI.</param>
         /// <param name="notificacaoRepository">Instância do repositório de notificações injetada via DI.</param>
         public AtualizarStatusPedidoHandler(
-            IPedidoRepository pedidoRepository,
-            INotificacaoRepository notificacaoRepository)
+            IPedidoRepository pedidoRepository)
         {
             _pedidoRepository = pedidoRepository;
-            _notificacaoRepository = notificacaoRepository;
         }
 
         /// <summary>
@@ -48,15 +45,6 @@ namespace TechsysLog.Application.Handlers.Pedidos
 
                 pedido.AtualizarStatus(statusEnum);
                 await _pedidoRepository.UpdateAsync(pedido, ct);
-
-                var notificacoes = await _notificacaoRepository.ListarPorUsuarioAsync(pedido.UsuarioId, ct);
-                var notificacao = notificacoes.FirstOrDefault(n => n.NumeroPedido == pedido.NumeroPedido);
-
-                if (notificacao != null)
-                {
-                    notificacao.AtualizarStatus(statusEnum);
-                    await _notificacaoRepository.UpdateAsync(notificacao, ct);
-                }
             }
             catch (Exception)
             {

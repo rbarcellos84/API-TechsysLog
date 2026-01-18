@@ -7,35 +7,30 @@ namespace TechsysLog.Web.Api.Security
 {
     public static class JwtSecurity
     {
-        //atributo para o token
-        //public static int ExpirationInMinutes = 20;
-        public static int ExpirationInHours = 8;
-        public static string SecretKey = "899335d4-3515-488c-bbd6-fe9ef591d0d5";
-
-        //geração de token
-        public static string GenerateToken(string enail)
+        public static string GenerateToken(string email, IConfiguration configuration)
         {
             var tokenHandler = new JwtSecurityTokenHandler();
-            var key = Encoding.ASCII.GetBytes(SecretKey);
 
-            //token
-            var tokenDescription = new SecurityTokenDescriptor
+            // Busca a chave do JSON centralizado
+            var secretKey = configuration["JwtSettings:Secret"];
+            var key = Encoding.ASCII.GetBytes(secretKey);
+            var expirationHours = double.Parse(configuration["JwtSettings:ExpirationHours"] ?? "8");
+
+            var tokenDescriptor = new SecurityTokenDescriptor
             {
-                //identificação do usuario para AspNet
-                Subject = new ClaimsIdentity(new Claim[]
+                Subject = new ClaimsIdentity(new[]
                 {
-                    //email do usuario
-                    new Claim(ClaimTypes.Name, enail)
+                    new Claim(ClaimTypes.Name, email),
+                    // O SignalR usa o NameIdentifier para mapear usuários aos Hubs
+                    new Claim(ClaimTypes.NameIdentifier, email)
                 }),
-
-                //tempo de expiração do token
-                Expires = DateTime.Now.AddHours(ExpirationInHours),
-
-                //criptografia do token
-                SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
+                Expires = DateTime.UtcNow.AddHours(expirationHours),
+                SigningCredentials = new SigningCredentials(
+                    new SymmetricSecurityKey(key),
+                    SecurityAlgorithms.HmacSha256Signature)
             };
 
-            var token = tokenHandler.CreateToken(tokenDescription);
+            var token = tokenHandler.CreateToken(tokenDescriptor);
             return tokenHandler.WriteToken(token);
         }
     }

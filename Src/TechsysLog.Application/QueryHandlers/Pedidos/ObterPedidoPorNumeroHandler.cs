@@ -2,24 +2,25 @@
 using System.Threading;
 using System.Threading.Tasks;
 using TechsysLog.Application.Dtos.Pedidos;
+using TechsysLog.Application.DTOs;
 using TechsysLog.Application.Queries.Pedidos;
-using TechsysLog.Domain.Interfaces;
 using TechsysLog.Application.QueryHandlers.Interfaces;
+using TechsysLog.Domain.Interfaces;
 
 namespace TechsysLog.Application.QueryHandlers.Pedidos
 {
     /// <summary>
     /// Handler responsável por processar a query de busca de um pedido específico através do seu número.
     /// </summary>
-    public class ObterPedidoPorPedidoHandler : IQueryHandler<ObterPedidoPorNumeroQuery, PedidoDto>
+    public class ObterPedidoPorNumeroHandler : IQueryHandler<ObterPedidoPorNumeroQuery, PedidoDto>
     {
         private readonly IPedidoRepository _pedidoRepository;
 
         /// <summary>
-        /// Inicializa uma nova instância da classe <see cref="ObterPedidoPorPedidoHandler"/>.
+        /// Inicializa uma nova instância da classe <see cref="ObterPedidoPorNumeroHandler"/>.
         /// </summary>
         /// <param name="pedidoRepository">Instância do repositório de pedidos injetada via DI.</param>
-        public ObterPedidoPorPedidoHandler(IPedidoRepository pedidoRepository)
+        public ObterPedidoPorNumeroHandler(IPedidoRepository pedidoRepository)
         {
             _pedidoRepository = pedidoRepository;
         }
@@ -48,9 +49,21 @@ namespace TechsysLog.Application.QueryHandlers.Pedidos
                     UsuarioId = pedido.UsuarioId,
                     ValorTotal = pedido.ValorTotal,
                     DataCriacao = pedido.DataCriacao,
+                    DataEnvio = pedido.DataEnvio,
+                    Lida = pedido.Lida,
                     DataAtualizacao = pedido.DataAtualizacao,
                     Descricao = pedido.Descricao,
-                    Itens = pedido.Itens.ToList()
+                    Itens = pedido.Itens.ToList(),
+
+                    EnderecoEntrega = pedido.EnderecoEntrega == null ? new EnderecoDto() : new EnderecoDto
+                    {
+                        CEP = pedido.EnderecoEntrega.CEP,
+                        Rua = pedido.EnderecoEntrega.Rua,
+                        Numero = pedido.EnderecoEntrega.Numero,
+                        Bairro = pedido.EnderecoEntrega.Bairro,
+                        Cidade = pedido.EnderecoEntrega.Cidade,
+                        Estado = pedido.EnderecoEntrega.Estado
+                    }
                 };
             }
             catch (Exception)

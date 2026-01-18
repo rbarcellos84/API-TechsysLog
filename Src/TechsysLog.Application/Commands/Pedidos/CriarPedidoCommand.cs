@@ -17,7 +17,7 @@ public class CriarPedidoCommand : ICommand
     /// Obtém ou define o número de identificação do pedido (ex: "123456").
     /// </summary>
     /// <example>123456</example>
-    public string Numero { get; set; }
+    public string NumeroPedido { get; set; }
 
     /// <summary>
     /// Obtém ou define a descrição geral do pedido.
@@ -53,10 +53,10 @@ public class CriarPedidoCommand : ICommand
     /// <param name="itens">Coleção de itens do pedido.</param>
     /// <param name="valorTotal">Valor total da transação.</param>
     /// <param name="enderecoEntrega">Objeto contendo os dados do endereço.</param>
-    public CriarPedidoCommand(Guid usuarioId, string numero, string descricao, IEnumerable<string> itens, decimal valorTotal, Endereco enderecoEntrega)
+    public CriarPedidoCommand(Guid usuarioId, string numeroPedido, string descricao, IEnumerable<string> itens, decimal valorTotal, Endereco enderecoEntrega)
     {
         UsuarioId = usuarioId;
-        Numero = numero;
+        NumeroPedido = numeroPedido;
         Descricao = descricao;
         Itens = itens.ToList();
         ValorTotal = valorTotal;

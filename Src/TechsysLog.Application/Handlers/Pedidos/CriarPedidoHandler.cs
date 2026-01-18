@@ -12,7 +12,6 @@ namespace TechsysLog.Application.Handlers.Pedidos
     {
         private readonly IPedidoRepository _pedidoRepository;
         private readonly IUsuarioRepository _usuarioRepository;
-        private readonly INotificacaoRepository _notificacaoRepository;
 
         /// <summary>
         /// Inicializa uma nova instância da classe <see cref="CriarPedidoHandler"/>.
@@ -22,12 +21,10 @@ namespace TechsysLog.Application.Handlers.Pedidos
         /// <param name="notificacaoRepository">Instância do repositório de notificações injetada via DI.</param>
         public CriarPedidoHandler(
             IPedidoRepository pedidoRepository,
-            IUsuarioRepository usuarioRepository,
-            INotificacaoRepository notificacaoRepository)
+            IUsuarioRepository usuarioRepository)
         {
             _pedidoRepository = pedidoRepository;
             _usuarioRepository = usuarioRepository;
-            _notificacaoRepository = notificacaoRepository;
         }
 
         /// <summary>
@@ -44,32 +41,24 @@ namespace TechsysLog.Application.Handlers.Pedidos
                 if (usuario is null)
                     throw new InvalidOperationException("Usuário não encontrado.");
 
-                var pedidoExistente = await _pedidoRepository.ObterPorNumeroAsync(command.Numero, ct);
+                var pedidoExistente = await _pedidoRepository.ObterPorNumeroAsync(command.NumeroPedido, ct);
                 if (pedidoExistente is not null)
                     throw new InvalidOperationException("Já existe um pedido com este número.");
 
                 var pedido = new Pedido(
                     id: Guid.NewGuid(),
                     usuarioId: command.UsuarioId,
-                    numeroPedido: command.Numero,
+                    numeroPedido: command.NumeroPedido,
                     descricao: command.Descricao,
                     itens: command.Itens.ToList(),
                     valorTotal: command.ValorTotal,
                     enderecoEntrega: command.EnderecoEntrega,
                     status: Status.Ingressado,
-                    dataCriacao: DateTime.UtcNow
+                    dataCriacao: DateTime.UtcNow,
+                    lida: false
                 );
 
                 await _pedidoRepository.AddAsync(pedido, ct);
-
-                var notificacao = new Notificacao(
-                    id: Guid.NewGuid(),
-                    usuarioId: pedido.UsuarioId,
-                    numeroPedido: pedido.NumeroPedido,
-                    status: pedido.Status
-                );
-
-                await _notificacaoRepository.AddAsync(notificacao, ct);
             }
             catch (Exception)
             {

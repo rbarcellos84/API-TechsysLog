@@ -1,4 +1,5 @@
 ﻿using TechsysLog.Domain.Entities;
+using TechsysLog.Domain.Entities.Enum;
 
 namespace TechsysLog.Domain.Interfaces
 {
@@ -13,13 +14,8 @@ namespace TechsysLog.Domain.Interfaces
         Task<Pedido?> ObterPorNumeroAsync(string numero, CancellationToken ct);
 
         /// <summary>
-        /// Lista todas as entidades cadastradas nao entregue.
+        /// Lista todas as entidades cadastradas.
         /// </summary>
-        Task<IEnumerable<Pedido>> ListarTodosNaoEntregueAsync(CancellationToken ct);
-
-        /// <summary>
-        /// Lista todas as entidades cadastradas entregue.
-        /// </summary>
-        Task<IEnumerable<Pedido>> ListarTodosEntregueAsync(CancellationToken ct);
+        Task<IEnumerable<Pedido>> ListarTodosPorEstadoAsync(Status status, CancellationToken ct);
     }
 }

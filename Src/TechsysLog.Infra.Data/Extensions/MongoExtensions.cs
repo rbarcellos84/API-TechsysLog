@@ -43,8 +43,6 @@ namespace TechsysLog.Infra.Data.Extensions
             /// </summary>
             UsuarioConfiguration.Configure(context.Database);
             PedidoConfiguration.Configure(context.Database);
-            EntregaConfiguration.Configure(context.Database);
-            NotificacaoConfiguration.Configure(context.Database);
 
             return services;
         }
