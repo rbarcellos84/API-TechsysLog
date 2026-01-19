@@ -8,6 +8,9 @@ services:
       - mongo-data:/data/db
 
   api-techsys:
+    build:
+      context: .
+      dockerfile: Dockerfile
     image: techsyslog-api
     container_name: api-techsys-container
     ports:
@@ -21,6 +24,9 @@ services:
       - db-log
 
   web-techsys:
+    build:
+      context: ../WebTechsys
+      dockerfile: Dockerfile
     image: techsys-web
     container_name: angular-dashboard
     ports:

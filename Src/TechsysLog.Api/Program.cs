@@ -102,11 +102,11 @@ builder.Services.AddMongoDbContext(builder.Configuration);
 // Configuração de CORS: Permite que o front-end acesse a API
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("DefaultPolicy", policy =>
+    options.AddPolicy("WebTechPolicy", policy =>
     {
         policy.WithOrigins("http://localhost:4200")
-              .AllowAnyMethod()
               .AllowAnyHeader()
+              .AllowAnyMethod()
               .AllowCredentials();
     });
 });
@@ -123,8 +123,8 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-// O CORS deve vir ANTES da Autenticação
-app.UseCors("DefaultPolicy");
+// O CORS
+app.UseCors("WebTechPolicy");
 
 app.UseAuthentication(); // Identifica quem é o usuário
 app.UseAuthorization();  // Verifica o que o usuário pode fazer
