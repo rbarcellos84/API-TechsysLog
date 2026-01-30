@@ -11,6 +11,7 @@ using MongoDB.Bson;
 using MongoDB.Bson.Serialization;
 using MongoDB.Bson.Serialization.Serializers;
 using TechsysLog.Web.Api.Security;
+using TechsysLog.Web.Api.Filters;
 
 // ============================================================
 // CONFIGURAÇÃO GLOBAL DO MONGODB (ADICIONE ISSO AQUI)
@@ -87,13 +88,25 @@ builder.Services.AddSwaggerGen(c =>
             Array.Empty<string>()
         }
     });
+
+    // Força o Swagger a usar HTTPS
+    c.AddServer(new OpenApiServer 
+    { 
+        Url = "https://localhost:5001", // ajuste para a porta HTTPS da sua aplicação
+        Description = "Servidor HTTPS local" 
+    });
 });
 
 // ============================================================
 // 3. INJEÇÃO DE DEPENDÊNCIAS E SERVIÇOS
 // ============================================================
 builder.Services.AddAuthorization();
-builder.Services.AddControllers();
+
+builder.Services.AddControllers(options => {
+    //Registro do filtro global de exceções
+    options.Filters.Add<ApiExceptionFilter>();
+});
+
 builder.Services.AddSignalR();
 
 builder.Services.AddApplicationDependencies(); // Suas dependências de IoC

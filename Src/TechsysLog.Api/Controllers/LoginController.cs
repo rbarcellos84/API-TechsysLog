@@ -35,65 +35,21 @@ namespace TechsysLog.WebApi.Controllers
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] EfetuarLoginCommand command, CancellationToken ct)
         {
-            try
-            {
-                var usuario = await _loginHandler.HandleAsync(command, ct);
+            var usuario = await _loginHandler.HandleAsync(command, ct);
 
-                if (usuario == null)
-                    return Unauthorized(new { erro = "Credenciais inválidas." });
+            if (usuario == null)
+                return Unauthorized(new { erro = "Credenciais inválidas." });
 
-                if (!command.Email.Equals(usuario.Email) || !SenhaHelper.ValidarSenha(command.Senha,usuario.SenhaHash))
-                    return BadRequest(new { erro = "E-mail ou senha incorretos." });
+            if (!command.Email.Equals(usuario.Email) || !SenhaHelper.ValidarSenha(command.Senha, usuario.SenhaHash))
+                return BadRequest(new { erro = "E-mail ou senha incorretos." });
 
-                // Geração do Token que resolve o erro 401 dos outros endpoints
-                var token = JwtSecurity.GenerateToken(usuario.Email, _configuration);
+            var token = JwtSecurity.GenerateToken(usuario.Email, _configuration);
 
-                return Ok(new
-                {
-                    mensagem = "Autenticação realizada com sucesso.",
-                    token = token
-                });
-            }
-            catch (Exception ex)
+            return Ok(new
             {
-                return StatusCode(500, new { erro = "Erro ao processar o login.", detalhes = ex.Message });
-            }
-        }
-
-        [HttpPost("recuperar-senha")]
-        public async Task<IActionResult> RecuperarSenha([FromBody] RecuperarSenhaCommand command, CancellationToken ct)
-        {
-            try
-            {
-                await _recuperarSenhaHandler.HandleAsync(command, ct);
-                return Ok(new { mensagem = "A nova senha foi enviada para o e-mail cadastrado." });
-            }
-            catch (DomainException ex)
-            {
-                return BadRequest(new { erro = ex.Message });
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new { erro = "Erro ao processar recuperação de senha." });
-            }
-        }
-
-        [HttpPost("cadastrar")]
-        public async Task<IActionResult> Cadastrar([FromBody] CriarUsuarioCommand command, CancellationToken ct)
-        {
-            try
-            {
-                await _criarUsuarioHandler.HandleAsync(command, ct);
-                return Ok(new { mensagem = "Usuário cadastrado com sucesso." });
-            }
-            catch (DomainException ex)
-            {
-                return BadRequest(new { erro = ex.Message });
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new { erro = "Erro ao realizar cadastro de usuário." });
-            }
+                mensagem = "Autenticação realizada com sucesso.",
+                token = token
+            });
         }
     }
 }

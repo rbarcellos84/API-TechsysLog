@@ -25,33 +25,17 @@ namespace TechsysLog.Web.Api.Controllers
         [HttpGet("obter-id/{email}")]
         public async Task<IActionResult> GetIdPorEmail(string email, CancellationToken ct)
         {
-            try
-            {
-                var usuario = await _obterLoginPorEmailHandler.HandleAsync(new ObterLoginPorEmailQuery(email), ct);
-                if (usuario == null) return NotFound(new { mensagem = "Usuário não encontrado." });
-
-                return Ok(new { usuarioId = usuario.Id });
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new { erro = "Erro ao processar a busca do e-mail.", detalhes = ex.Message });
-            }
+            var usuario = await _obterLoginPorEmailHandler.HandleAsync(new ObterLoginPorEmailQuery(email), ct);
+            if (usuario == null) return NotFound(new { mensagem = "Usuário não encontrado." });
+            return Ok(new { usuarioId = usuario.Id });
         }
 
         [HttpGet("obter-email/{id}")]
         public async Task<IActionResult> GetEmailPorId(Guid id, CancellationToken ct)
         {
-            try
-            {
-                var usuario = await _obterLoginPorIdHandler.HandleAsync(new ObterLoginPorIdQuery(id), ct);
-                if (usuario == null) return NotFound(new { mensagem = "Usuário não encontrado." });
-
-                return Ok(new { usuarioEmail = usuario.Email });
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new { erro = "Erro ao processar a busca do id.", detalhes = ex.Message });
-            }
+            var usuario = await _obterLoginPorIdHandler.HandleAsync(new ObterLoginPorIdQuery(id), ct);
+            if (usuario == null) return NotFound(new { mensagem = "Usuário não encontrado." });
+            return Ok(new { usuarioEmail = usuario.Email });
         }
     }
 }
